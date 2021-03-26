@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "AutoSigner": {
+      "commandName": "Project",
+      "commandLineArgs": "\"/FolderKeyMap:Шогенова А=anzhelika.shogenova@kapmed.ru\"",
+      "environmentVariables": {
+        "AS_DestinationDirectory": "\\\\nl-srv-vipnet\\VipNetShare\\Исходящие\\Общие",
+        "AS_LogFile": "logs",
+        "AS_FolderKeyMap__Кумахов К": "kasbolat.kumakhov@kapmed.ru",
+        "AS_SourceDirectory": "\\\\nl-srv-vipnet\\VipNetShare\\Документы",
+        "AS_Signer": "e:\\temp\\test_preprocessor.bat %SRC%",
+        "AS_SearchPattern": "(\\.*)(.txt)"
+      }
+    }
+  }
+}

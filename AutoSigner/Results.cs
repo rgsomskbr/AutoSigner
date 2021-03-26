@@ -7,12 +7,15 @@ using System.Threading.Tasks;
 
 namespace AutoSigner
 {
-	internal enum SubfoldersMode
+	internal enum Results
 	{
-		[JsonPropertyName("parse")]
-		Parse,
+		[JsonPropertyName("pack")]
+		Pack,
 
-		[JsonPropertyName("skip")]
-		Skip,
+		[JsonPropertyName("move")]
+		Move,
+
+		[JsonPropertyName("move_pack")]
+		MovePack,
 	}
 }

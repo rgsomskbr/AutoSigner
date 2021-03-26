@@ -1,8 +1,6 @@
 {
 	"SourceDirectory": "users",
 	"DestinationDirectory": "vipnet",
-	"FilesMode": "single",
-	"SubfoldersMode": "parse",
 	"Signer": "%SRC%",
 	"FolderKeyMap": {
 		"Иванова А": "ivanova_a@mail.ru",

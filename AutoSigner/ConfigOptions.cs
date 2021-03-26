@@ -7,32 +7,28 @@ using System.Threading.Tasks;
 
 namespace AutoSigner
 {
-	internal class ConfigOptions
+	internal record ConfigOptions
 	{
 		[Required(ErrorMessage = "Не указана исходная папка")]
-		public string SourceDirectory { get; set; }
+		public string SourceDirectory { get; init; }
 
 		[Required(ErrorMessage = "Не указана папка назначения")]
-		public string DestinationDirectory { get; set; }
+		public string DestinationDirectory { get; init; }
 
-		public string SearchPattern { get; set; } = "*";
+		public string SearchPattern { get; init; }
 
-		[Required(ErrorMessage = "Не указан метод обработки файлов")]
-		public FilesMode FilesMode { get; set; }
-
-		[Required(ErrorMessage = "Не указан метод обработки подпапок")]
-		public SubfoldersMode SubfoldersMode { get; set; }
+		public SubfoldersMode SubfoldersMode { get; init; } = SubfoldersMode.Parse;
 
 		[Required(ErrorMessage = "Не указан скрипт подписания")]
-		public string Signer { get; set; }
+		public string Signer { get; init; }
 
-		public string PreProcessor { get; set; }
-		public string PostProcessor { get; set; }
-		public string ExternalArchiver { get; set; }
+		public Results Results { get; init; } = Results.Pack;
+
+		public string PostProcessor { get; init; }
 
 		[Required(ErrorMessage = "Не указана таблица соответствий подпапок ключам поиска")]
-		public Dictionary<string, string> FolderKeyMap { get; set; }
+		public Dictionary<string, string> FolderKeyMap { get; init; }
 
-		public string LogFile { get; set; }
+		public string LogFile { get; init; }
 	}
 }
