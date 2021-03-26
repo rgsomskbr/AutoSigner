@@ -26,6 +26,7 @@ namespace AutoSigner
 			{
 				FileName = command.Key,
 				Arguments = command.Value,
+				WorkingDirectory = Path.GetDirectoryName(command.Key),
 				RedirectStandardOutput = true,
 				RedirectStandardError = true,
 				CreateNoWindow = true,
@@ -43,7 +44,11 @@ namespace AutoSigner
 			}
 
 			var lastLine = string.Empty;
-			for (; !process.StandardOutput.EndOfStream; lastLine = process.StandardOutput.ReadLine());
+			while (!process.StandardOutput.EndOfStream)
+			{
+				lastLine = process.StandardOutput.ReadLine();
+				_logger.LogDebug(lastLine);
+			}
 
 			return lastLine;
 		}

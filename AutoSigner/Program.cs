@@ -37,7 +37,7 @@ namespace AutoSigner
 			Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
 			Log.Logger = new LoggerConfiguration()
-				.MinimumLevel.Information()
+				.MinimumLevel.Debug()
 				.WriteTo.Console()
 				.CreateLogger()
 			;

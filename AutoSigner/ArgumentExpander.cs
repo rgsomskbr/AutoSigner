@@ -14,9 +14,6 @@ namespace AutoSigner
 		public const string SubfolderToken = "%FLD%";
 		public const string KeyToken = "%KEY%";
 
-		private static string SurroundTextWith(string source, string symbols) =>
-			symbols + source + symbols;
-
 		private static string ReplaceTokens(string source, string token, string value) =>
 			string.Join(value, source.Split(token));
 
@@ -24,7 +21,7 @@ namespace AutoSigner
 		{
 			foreach (var token in tokens)
 			{
-				arguments = ReplaceTokens(arguments, token.Key, SurroundTextWith(token.Value, "\""));
+				arguments = ReplaceTokens(arguments, token.Key, token.Value);
 			}
 
 			return arguments;
