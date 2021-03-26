@@ -18,7 +18,7 @@ namespace AutoSigner
 		private readonly Regex _regexPattern;
 		private readonly ILogger<Processor> _logger;
 
-		private static string ExecuteProcessor(string commandLine, IDictionary<string, string> tokens)
+		private string ExecuteProcessor(string commandLine, IDictionary<string, string> tokens)
 		{
 			var arguments = ArgumentExpander.ExpandArguments(commandLine, tokens);
 			var command = ArgumentExpander.SplitCommandAndArguments(arguments);
@@ -29,8 +29,8 @@ namespace AutoSigner
 				RedirectStandardOutput = true,
 				RedirectStandardError = true,
 				CreateNoWindow = true,
-				StandardOutputEncoding = Encoding.UTF8,
-				StandardErrorEncoding = Encoding.UTF8,
+				StandardOutputEncoding = Encoding.GetEncoding(_configOptions.ConsoleCodePage),
+				StandardErrorEncoding = Encoding.GetEncoding(_configOptions.ConsoleCodePage),
 			};
 
 			using var process = System.Diagnostics.Process.Start(startInfo);

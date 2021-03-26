@@ -29,6 +29,7 @@ namespace AutoSigner
 		[Required(ErrorMessage = "Не указана таблица соответствий подпапок ключам поиска")]
 		public Dictionary<string, string> FolderKeyMap { get; init; }
 
+		public string ConsoleCodePage { get; init; } = "cp866";
 		public string LogFile { get; init; }
 	}
 }
