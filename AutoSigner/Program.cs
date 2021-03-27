@@ -79,7 +79,7 @@ namespace AutoSigner
 					Log.Logger = new LoggerConfiguration()
 						.MinimumLevel.Debug()
 						.WriteTo.Console()
-						.WriteTo.File(Path.Combine(configOptions.LogFile, LogFileName), rollingInterval: RollingInterval.Day)
+						.WriteTo.File(Environment.ExpandEnvironmentVariables(Path.Combine(configOptions.LogFile, LogFileName)), rollingInterval: RollingInterval.Day)
 						.CreateLogger();
 
 					var processor = serviceProvider.GetRequiredService<Processor>();
