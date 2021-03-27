@@ -20,6 +20,8 @@
 
 SourceDirectory `->` SearchPattern `->` Signer `->` Results `->` DestinationDirectory `->` PostProcessor
 
+Последняя версия [здесь](https://github.com/rgsomskbr/AutoSigner/releases/latest)
+
 <br/>
 
 ## Конфигурация
