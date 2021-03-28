@@ -1,35 +1,46 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Serilog;
+﻿using Serilog;
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace AutoSigner
 {
 	internal static class Program
 	{
+		private const string ValidationErrorTemplate = "Ошибка валидации конфигурации: {Error}";
 		private const string ConfigName = "config.json";
 		private const string LogFileName = "autosigner-.log";
 
-		private static ConfigOptions GetValidOptions(IServiceProvider serviceProvider)
+		private static ConfigOptions GetValidOptions()
 		{
-			try
+			var configText = File.ReadAllText(ConfigName);
+			var config = System.Text.Json.JsonSerializer.Deserialize<ConfigOptions>(configText);
+			if (string.IsNullOrWhiteSpace(config.SourceDirectory))
 			{
-				return serviceProvider.GetRequiredService<IOptions<ConfigOptions>>().Value;
-			}
-			catch (OptionsValidationException ex)
-			{
-				Log.Error("Ошибка валидации параметров:");
-				foreach (var failure in ex.Failures)
-				{
-					Log.Error("{Failure}", failure);
-				}
-
+				Log.Error(ValidationErrorTemplate, "Не указана исходная папка");
 				return null;
 			}
+
+			if (string.IsNullOrWhiteSpace(config.DestinationDirectory))
+			{
+				Log.Error(ValidationErrorTemplate, "Не указана папка назначения");
+				return null;
+			}
+
+			if (string.IsNullOrWhiteSpace(config.Signer))
+			{
+				Log.Error(ValidationErrorTemplate, "Не указан скрипт подписания");
+				return null;
+			}
+
+			if (config.FolderKeyMap?.Any() != true)
+			{
+				Log.Error(ValidationErrorTemplate, "Не указана таблица соответствий подпапок ключам поиска");
+				return null;
+			}
+
+			return config;
 		}
 
 		private static int Main(string[] args)
@@ -46,27 +57,7 @@ namespace AutoSigner
 			{
 				Log.Information("Инициализация");
 
-				var configuration = new ConfigurationBuilder()
-					.AddJsonFile(ConfigName)
-					.AddEnvironmentVariables("AS_")
-					.AddCommandLine(args)
-					.Build()
-				;
-
-				var services = new ServiceCollection()
-					.AddLogging(cfg => cfg.AddSerilog())
-					.AddSingleton(configuration)
-					.AddTransient<Processor>()
-				;
-
-				services
-					.AddOptions<ConfigOptions>()
-					.Bind(configuration)
-					.ValidateDataAnnotations()
-				;
-
-				using var serviceProvider = services.BuildServiceProvider(true);
-				var configOptions = GetValidOptions(serviceProvider);
+				var configOptions = GetValidOptions();
 				if (configOptions == null)
 				{
 					return 1;
@@ -82,7 +73,7 @@ namespace AutoSigner
 						.WriteTo.File(Environment.ExpandEnvironmentVariables(Path.Combine(configOptions.LogFile, LogFileName)), rollingInterval: RollingInterval.Day)
 						.CreateLogger();
 
-					var processor = serviceProvider.GetRequiredService<Processor>();
+					var processor = new Processor(configOptions);
 					processor.Process();
 				}
 			}

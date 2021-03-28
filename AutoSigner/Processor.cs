@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+﻿using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,7 +15,6 @@ namespace AutoSigner
 	{
 		private readonly ConfigOptions _configOptions;
 		private readonly Regex _regexPattern;
-		private readonly ILogger<Processor> _logger;
 
 		private string ExecuteProcessor(string commandLine, IDictionary<string, string> tokens)
 		{
@@ -47,7 +45,7 @@ namespace AutoSigner
 			while (!process.StandardOutput.EndOfStream)
 			{
 				lastLine = process.StandardOutput.ReadLine();
-				_logger.LogDebug(lastLine);
+				Log.Debug(lastLine);
 			}
 
 			return lastLine;
@@ -57,21 +55,21 @@ namespace AutoSigner
 		{
 			var files = Directory.EnumerateFiles(path, string.Empty, SearchOption.AllDirectories);
 
-			_logger.LogInformation("Всего найдено файлов: {Files}", files.Count());
+			Log.Information("Всего найдено файлов: {Files}", files.Count());
 
 			if (_configOptions.SubfoldersMode == SubfoldersMode.Skip)
 			{
 				files = Directory.EnumerateFiles(path, string.Empty, SearchOption.TopDirectoryOnly);
 			}
 
-			_logger.LogInformation("Отобрано согласно {Mode}: {Files}", nameof(SubfoldersMode), files.Count());
+			Log.Information("Отобрано согласно {Mode}: {Files}", nameof(SubfoldersMode), files.Count());
 
 			if (_regexPattern != null)
 			{
 				files = files
 					.Where(f => _regexPattern.IsMatch(Path.GetFileName(f)));
 
-				_logger.LogInformation("Отобрано согласно {Pattern}: {Files}", nameof(ConfigOptions.SearchPattern), files.Count());
+				Log.Information("Отобрано согласно {Pattern}: {Files}", nameof(ConfigOptions.SearchPattern), files.Count());
 			}
 
 			return files;
@@ -81,7 +79,7 @@ namespace AutoSigner
 		{
 			var destination = Path.Combine(_configOptions.DestinationDirectory, Path.ChangeExtension(archiveName, ".zip"));
 
-			_logger.LogInformation("Архивирование: {Destination}", destination);
+			Log.Information("Архивирование: {Destination}", destination);
 
 			using var stream = File.Create(destination);
 			using var archive = new ZipArchive(stream, ZipArchiveMode.Create);
@@ -96,7 +94,7 @@ namespace AutoSigner
 
 		private string SignFile(IDictionary<string, string> tokens)
 		{
-			_logger.LogInformation("Подписание");
+			Log.Information("Подписание");
 
 			var result = ExecuteProcessor(_configOptions.Signer, tokens);
 			if (string.IsNullOrWhiteSpace(result))
@@ -106,7 +104,7 @@ namespace AutoSigner
 
 			if (File.Exists(result))
 			{
-				_logger.LogInformation("Файл подписи: {SignedFile}", result);
+				Log.Information("Файл подписи: {SignedFile}", result);
 				return result;
 			}
 
@@ -115,7 +113,7 @@ namespace AutoSigner
 
 		private void ProcessFile(string file, string subfolder, string key)
 		{
-			_logger.LogInformation("Обработка файла: {File}", file);
+			Log.Information("Обработка файла: {File}", file);
 
 			var tokens = new Dictionary<string, string>
 			{
@@ -127,7 +125,7 @@ namespace AutoSigner
 			var signedFile = SignFile(tokens);
 			var destination = string.Empty;
 
-			_logger.LogInformation("Перенос результатов в конечную папку");
+			Log.Information("Перенос результатов в конечную папку");
 			switch (_configOptions.Results)
 			{
 				case Results.Pack:
@@ -147,27 +145,24 @@ namespace AutoSigner
 
 			if (!string.IsNullOrWhiteSpace(_configOptions.PostProcessor))
 			{
-				_logger.LogInformation("Вызов постпроцессора");
+				Log.Information("Вызов постпроцессора");
 				tokens[ArgumentExpander.DestinationFileToken] = destination;
 				ExecuteProcessor(_configOptions.PostProcessor, tokens);
 			}
 
-			_logger.LogInformation("Удаление исходного файла");
+			Log.Information("Удаление исходного файла");
 			File.Delete(file);
 
 			if (File.Exists(signedFile))
 			{
-				_logger.LogInformation("Удаление подписи");
+				Log.Information("Удаление подписи");
 				File.Delete(signedFile);
 			}
 		}
 
-		public Processor(
-			IOptions<ConfigOptions> options,
-			ILogger<Processor> logger)
+		public Processor(ConfigOptions options)
 		{
-			_configOptions = options.Value;
-			_logger = logger;
+			_configOptions = options;
 
 			if (!string.IsNullOrWhiteSpace(_configOptions.SearchPattern))
 			{
@@ -179,7 +174,7 @@ namespace AutoSigner
 		{
 			foreach (var subfolder in _configOptions.FolderKeyMap)
 			{
-				_logger.LogInformation("Обработка подпапки: {Subfolder}", subfolder.Key);
+				Log.Information("Обработка подпапки: {Subfolder}", subfolder.Key);
 
 				var subfolderPath = Path.Combine(_configOptions.SourceDirectory, subfolder.Key);
 				var files = GetFiles(subfolderPath);
